@@ -12,22 +12,28 @@ class Genre(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=200, verbose_name=("Название"))
-    author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True, verbose_name=("Автор"))
-    summary = models.TextField(max_length=1000, help_text="Введите краткое описание книги", verbose_name=("Описание"))
-    isbn = models.CharField('ISBN',max_length=13, help_text='13 Character <a href="https://www.isbn-international.org/content/what-isbn">ISBN number</a>')
-    genre = models.ManyToManyField(Genre, help_text="Выберите жанр(ы) книги", verbose_name=("Жанр"))
+    author = models.ManyToManyField('Author', verbose_name=("Автор"))
+    short_description = models.TextField(max_length=1000, help_text="Введите краткое описание книги", verbose_name=("Описание"))
+    isbn = models.CharField('ISBN', max_length=13, help_text='13 символов <a href="https://www.isbn-international.org/content/what-isbn">номер ISBN</a>')
+    genre = models.ManyToManyField('Genre', help_text="Выберите жанр(ы) книги", verbose_name=("Жанр"))
 
     def __str__(self):
         return self.title
 
-
     def get_absolute_url(self):
         return reverse('book-detail', args=[str(self.id)])
+
+    def display_authors(self):
+        return ', '.join([author.first_name + ' ' + author.last_name for author in self.author.all()])
+
+    display_authors.short_description = 'Авторы'
 
     def display_genre(self):
         return ', '.join([genre.name for genre in self.genre.all()[:3]])
 
-    display_genre.short_description = 'Genre'
+    display_genre.short_description = 'Жанр'
+
+
 
 class BookInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text="Уникальный ID этой конкретной книги во всей библиотеке.", verbose_name=("ID"))
